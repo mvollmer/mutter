@@ -28,6 +28,11 @@
 #include <gtk/gtk.h>
 
 /**
+ * MetaStyleInfo: (skip)
+ *
+ */
+typedef struct _MetaStyleInfo MetaStyleInfo;
+/**
  * MetaFrameStyle: (skip)
  *
  */
@@ -675,6 +680,19 @@ typedef enum
 
 typedef enum
 {
+  META_STYLE_ELEMENT_FRAME,
+  META_STYLE_ELEMENT_LAST
+} MetaStyleElement;
+
+struct _MetaStyleInfo
+{
+  int refcount;
+
+  GtkStyleContext *styles[META_STYLE_ELEMENT_LAST];
+};
+
+typedef enum
+{
   /* Listed in the order in which the textures are drawn.
    * (though this only matters for overlaps of course.)
    * Buttons are drawn after the frame textures.
@@ -1021,11 +1039,13 @@ double meta_theme_get_title_scale (MetaTheme     *theme,
                                    MetaFrameType  type,
                                    MetaFrameFlags flags);
 
-GtkStyleContext * meta_theme_create_style_context (GdkScreen   *screen,
-                                                   const gchar *variant);
+MetaStyleInfo * meta_theme_create_style_info (GdkScreen   *screen,
+                                              const gchar *variant);
+MetaStyleInfo * meta_style_info_ref          (MetaStyleInfo *style);
+void            meta_style_info_unref        (MetaStyleInfo  *style_info);
 
 void meta_theme_draw_frame (MetaTheme              *theme,
-                            GtkStyleContext        *style_gtk,
+                            MetaStyleInfo          *style_info,
                             cairo_t                *cr,
                             MetaFrameType           type,
                             MetaFrameFlags          flags,
