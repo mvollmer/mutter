@@ -540,6 +540,16 @@ get_padding_and_border (GtkStyleContext *style,
 }
 
 static void
+scale_border (GtkBorder *border,
+              double     factor)
+{
+  border->left *= factor;
+  border->right *= factor;
+  border->top *= factor;
+  border->bottom *= factor;
+}
+
+static void
 meta_frame_layout_sync_with_style (MetaFrameLayout *layout,
                                    MetaStyleInfo   *style_info,
                                    MetaFrameFlags   flags)
@@ -554,6 +564,7 @@ meta_frame_layout_sync_with_style (MetaFrameLayout *layout,
 
   style = style_info->styles[META_STYLE_ELEMENT_FRAME];
   get_padding_and_border (style, &border);
+  scale_border (&border, layout->title_scale);
 
   layout->left_width = border.left;
   layout->right_width = border.right;
@@ -576,6 +587,7 @@ meta_frame_layout_sync_with_style (MetaFrameLayout *layout,
   layout->bottom_right_corner_rounded_radius = border_radius;
 
   get_padding_and_border (style, &border);
+  scale_border (&border, layout->title_scale);
   layout->left_titlebar_edge = border.left;
   layout->right_titlebar_edge = border.right;
   layout->title_vertical_pad = border.top;
@@ -590,11 +602,13 @@ meta_frame_layout_sync_with_style (MetaFrameLayout *layout,
 
   style = style_info->styles[META_STYLE_ELEMENT_BUTTON];
   get_padding_and_border (style, &border);
+  scale_border (&border, layout->title_scale);
   layout->button_width += border.left + border.right;
   layout->button_height += border.top + border.bottom;
 
   style = style_info->styles[META_STYLE_ELEMENT_IMAGE];
   get_padding_and_border (style, &border);
+  scale_border (&border, layout->title_scale);
   layout->button_width += border.left + border.right;
   layout->button_height += border.top + border.bottom;
 }
