@@ -4034,6 +4034,15 @@ get_button (MetaFrameStyle *style,
   return op_list;
 }
 
+void
+meta_frame_style_apply_scale (const MetaFrameStyle *style,
+                              PangoFontDescription *font_desc)
+{
+  int size = pango_font_description_get_size (font_desc);
+  pango_font_description_set_size (font_desc,
+                                   MAX (size * style->layout->title_scale, 1));
+}
+
 gboolean
 meta_frame_style_validate (MetaFrameStyle    *style,
                            guint              current_theme_version,
@@ -5122,6 +5131,22 @@ meta_style_info_unref (MetaStyleInfo *style_info)
     }
 }
 
+PangoFontDescription*
+meta_style_info_create_font_desc (MetaStyleInfo *style_info)
+{
+  PangoFontDescription *font_desc;
+  const PangoFontDescription *override = meta_prefs_get_titlebar_font ();
+
+  gtk_style_context_get (style_info->styles[META_STYLE_ELEMENT_TITLE],
+                         GTK_STATE_FLAG_NORMAL,
+                         "font", &font_desc, NULL);
+
+  if (override)
+    pango_font_description_merge (font_desc, override, TRUE);
+
+  return font_desc;
+}
+
 void
 meta_theme_draw_frame (MetaTheme              *theme,
                        MetaStyleInfo          *style_info,
@@ -5488,29 +5513,6 @@ meta_theme_lookup_color_constant (MetaTheme   *theme,
     {
       return FALSE;
     }
-}
-
-
-PangoFontDescription*
-meta_gtk_widget_get_font_desc (GtkWidget *widget,
-                               double     scale,
-			       const PangoFontDescription *override)
-{
-  GtkStyleContext *style;
-  PangoFontDescription *font_desc;
-
-  g_return_val_if_fail (gtk_widget_get_realized (widget), NULL);
-
-  style = gtk_widget_get_style_context (widget);
-  gtk_style_context_get (style, GTK_STATE_FLAG_NORMAL, "font", &font_desc, NULL);
-
-  if (override)
-    pango_font_description_merge (font_desc, override, TRUE);
-
-  pango_font_description_set_size (font_desc,
-                                   MAX (pango_font_description_get_size (font_desc) * scale, 1));
-
-  return font_desc;
 }
 
 /**
