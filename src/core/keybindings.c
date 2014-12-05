@@ -3040,7 +3040,7 @@ handle_toggle_tiled (MetaDisplay     *display,
       else
         meta_window_unmaximize (window, META_MAXIMIZE_BOTH);
     }
-  else if (meta_window_can_tile_side_by_side (window))
+  else if (meta_window_can_tile_side_by_side (window, mode))
     {
       window->tile_monitor_number = window->monitor->number;
       window->tile_mode = mode;

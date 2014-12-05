@@ -2892,8 +2892,25 @@ meta_window_can_tile_maximized (MetaWindow *window)
   return window->has_maximize_func;
 }
 
+static void
+meta_window_adjust_area_for_tiling (MetaWindow *window,
+                                    MetaTileMode tile_mode,
+                                    MetaRectangle *tile_area)
+{
+  if (tile_mode == META_TILE_LEFT)
+    {
+      tile_area->width *= window->workspace->tile_aspect;
+    }
+  else if (tile_mode == META_TILE_RIGHT)
+    {
+      tile_area->x = tile_area->width * window->workspace->tile_aspect;
+      tile_area->width -= tile_area->x;
+    }
+}
+
 gboolean
-meta_window_can_tile_side_by_side (MetaWindow *window)
+meta_window_can_tile_side_by_side (MetaWindow *window,
+                                   MetaTileMode tile_mode)
 {
   int monitor;
   MetaRectangle tile_area;
@@ -2909,7 +2926,7 @@ meta_window_can_tile_side_by_side (MetaWindow *window)
   if (tile_area.height > tile_area.width)
     return FALSE;
 
-  tile_area.width /= 2;
+  meta_window_adjust_area_for_tiling (window, tile_mode, &tile_area);
 
   meta_window_frame_rect_to_client_rect (window, &tile_area, &client_rect);
 
@@ -5614,10 +5631,10 @@ update_move (MetaWindow  *window,
       /* Check if the cursor is in a position which triggers tiling
        * and set tile_mode accordingly.
        */
-      if (meta_window_can_tile_side_by_side (window) &&
+      if (meta_window_can_tile_side_by_side (window, META_TILE_LEFT) &&
           x >= monitor->rect.x && x < (work_area.x + shake_threshold))
         window->tile_mode = META_TILE_LEFT;
-      else if (meta_window_can_tile_side_by_side (window) &&
+      else if (meta_window_can_tile_side_by_side (window, META_TILE_RIGHT) &&
                x >= work_area.x + work_area.width - shake_threshold &&
                x < (monitor->rect.x + monitor->rect.width))
         window->tile_mode = META_TILE_RIGHT;
@@ -6282,13 +6299,7 @@ meta_window_get_current_tile_area (MetaWindow    *window,
   tile_monitor_number = meta_window_get_current_tile_monitor_number (window);
 
   meta_window_get_work_area_for_monitor (window, tile_monitor_number, tile_area);
-
-  if (window->tile_mode == META_TILE_LEFT  ||
-      window->tile_mode == META_TILE_RIGHT)
-    tile_area->width /= 2;
-
-  if (window->tile_mode == META_TILE_RIGHT)
-    tile_area->x += tile_area->width;
+  meta_window_adjust_area_for_tiling (window, window->tile_mode, tile_area);
 }
 
 gboolean

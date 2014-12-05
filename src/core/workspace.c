@@ -164,6 +164,7 @@ meta_workspace_class_init (MetaWorkspaceClass *klass)
 static void
 meta_workspace_init (MetaWorkspace *workspace)
 {
+  workspace->tile_aspect = 0.618;
 }
 
 MetaWorkspace*
