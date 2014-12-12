@@ -1,0 +1,11 @@
+#! /bin/bash
+
+set -e
+
+Xephyr :8 &
+sleep 0.5
+
+DISPLAY=:8 xterm &
+DISPLAY=:8 xterm &
+
+DISPLAY=:8 ./mutter
